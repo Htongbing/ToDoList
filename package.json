@@ -1,0 +1,26 @@
+{
+  "name": "todolist",
+  "version": "1.0.0",
+  "description": "Spaas ToDoList",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Htongbing/ToDoList.git"
+  },
+  "author": "Htongbing",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Htongbing/ToDoList/issues"
+  },
+  "homepage": "https://github.com/Htongbing/ToDoList#readme",
+  "dependencies": {
+    "koa": "^2.7.0",
+    "koa-router": "^7.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.1"
+  }
+}
