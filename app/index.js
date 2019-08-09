@@ -3,19 +3,30 @@ const app = new Koa()
 const routing = require('./routes')
 const bodyparser = require('koa-bodyparser')
 const error = require('koa-json-error')
-const parameter = require('koa-parameter')
+const parameter = require('./middlewares/parameter')
 const mongoose = require('mongoose')
+const success = require('./middlewares/success')
 mongoose.connect('mongodb://localhost:27017/todolist', {
   useNewUrlParser: true,
-  useFindAndModify: false
+  useFindAndModify: false,
+  useCreateIndex: true
 }, () => console.log('MongoDB connected'))
 mongoose.connection.on('error', console.error)
 
 app.use(error({
-  postFormat: (e, { stack, ...rest }) => process.env.NODE_ENV === 'production' ? rest : { stack, ...rest }
+  postFormat: (error, { stack }) => {
+    const { status, message, statusCode } = error
+    const res = {
+      code: status || statusCode || 500,
+      message
+    }
+    error.status = /^(?!404)4/.test(res.code) ? 200 : res.code
+    return process.env.NODE_ENV === 'production' ? res : { stack, ...res }
+  }
 }))
 app.use(bodyparser())
 app.use(parameter(app))
+app.use(success(app))
 
 routing(app)
 
