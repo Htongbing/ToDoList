@@ -11,6 +11,16 @@ const userSchema = new Schema({
     type: String,
     required: true,
     select: false
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  // 邮箱验证状态，0：未验证，1：已验证
+  emailStatus: {
+    type: Number,
+    default: 0
   }
 })
 
