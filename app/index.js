@@ -10,8 +10,11 @@ mongoose.connect('mongodb://localhost:27017/todolist', {
   useNewUrlParser: true,
   useFindAndModify: false,
   useCreateIndex: true
-}, () => console.log('MongoDB connected'))
-mongoose.connection.on('error', console.error)
+})
+mongoose.connection.on('error', console.error).on('connected', () => console.log('MongoDB connected'))
+const Redis = require('ioredis')
+const redis = new Redis(6379, '192.168.99.100')
+app.context.redis = redis
 
 app.use(error({
   postFormat: (error, { stack }) => {

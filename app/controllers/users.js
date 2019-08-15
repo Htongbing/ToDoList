@@ -4,6 +4,13 @@ const md5 = require('md5')
 
 class UsersCtl {
   async signUp(ctx) {
+    const { account, password, email, verification_code } = ctx.request.body
+    const { redis, cookies } = ctx
+    const codeKey = `VERIFICATION:${cookies.get('verification_id')}`
+    const code = await redis.get(codeKey)
+    if (verification_code !== code) ctx.throw(412, '验证码错误或者已过期')
+    redis.del(codeKey)
+    cookies.set('verification_id', null)
     ctx.verifyParams({
       account: {
         type: 'string',
@@ -30,7 +37,7 @@ class UsersCtl {
         matchMessage: '邮箱格式不正确'
       }
     })
-    const { account, password, email } = ctx.request.body, user = await User.findOne({
+    const user = await User.findOne({
       $or: [{ account }, { email }]
     })
     if (user) ctx.throw(412, '帐号或邮箱已存在')
