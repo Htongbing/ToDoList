@@ -18,6 +18,7 @@
   "homepage": "https://github.com/Htongbing/ToDoList#readme",
   "dependencies": {
     "ioredis": "^4.14.0",
+    "jsonwebtoken": "^8.5.1",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
     "koa-json-error": "^3.1.2",

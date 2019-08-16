@@ -6,14 +6,15 @@ const error = require('koa-json-error')
 const parameter = require('./middlewares/parameter')
 const mongoose = require('mongoose')
 const success = require('./middlewares/success')
-mongoose.connect('mongodb://localhost:27017/todolist', {
+const { mongoUrl, mongoTable, redisUrl, redisPort } = require('./const/config')
+mongoose.connect(`mongodb://${mongoUrl}/${mongoTable}`, {
   useNewUrlParser: true,
   useFindAndModify: false,
   useCreateIndex: true
 })
 mongoose.connection.on('error', console.error).on('connected', () => console.log('MongoDB connected'))
 const Redis = require('ioredis')
-const redis = new Redis(6379, '192.168.99.100')
+const redis = new Redis(redisPort, redisUrl)
 app.context.redis = redis
 
 app.use(error({

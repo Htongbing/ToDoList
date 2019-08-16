@@ -1,9 +1,9 @@
 module.exports = function(app) {
-  app.context.success = function(message, data) {
+  app.context.success = function(data) {
     this.status = 200
     this.body = {
       code: 0,
-      message: message || '',
+      message: 'success',
       data: data || null
     }
   }

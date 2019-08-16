@@ -8,7 +8,7 @@ class UsersCtl {
     const { redis, cookies } = ctx
     const codeKey = `VERIFICATION:${cookies.get('verification_id')}`
     const code = await redis.get(codeKey)
-    if (verification_code !== code) ctx.throw(412, '验证码错误或者已过期')
+    if (verification_code !== code) ctx.throw(400, '验证码错误或者已过期')
     redis.del(codeKey)
     cookies.set('verification_id', null)
     ctx.verifyParams({
@@ -40,13 +40,39 @@ class UsersCtl {
     const user = await User.findOne({
       $or: [{ account }, { email }]
     })
-    if (user) ctx.throw(412, '帐号或邮箱已存在')
+    if (user) ctx.throw(400, '帐号或邮箱已存在')
     const { id } = await User.create({
       account,
       email,
       password: md5(password)
     })
-    ctx.success('注册成功', {id})
+    ctx.success({id})
+  }
+  async signIn(ctx) {
+    ctx.verifyParams({
+      username: {
+        type: 'string',
+        required: true,
+        emptyMessage: '用户名不能为空',
+        typeMessage: '用户名必须为string类型'
+      },
+      password: {
+        type: 'string',
+        required: true,
+        emptyMessage: '密码不能为空',
+        typeMessage: '密码必须为string类型'
+      }
+    })
+    const user = await User.findOne({
+      $or: [{ account: username }, { email: username }]
+    })
+    if (!user) ctx.throw(400, '帐号或者邮箱不存在')
+    const { id, password } = user
+    if (md5(ctx.request.body.password) !== password) ctx.throw(400, '密码错误')
+    ctx.success({
+      id,
+      token: ''
+    })
   }
 }
 
