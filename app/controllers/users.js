@@ -1,6 +1,8 @@
 const User = require('../models/users')
 const { ACCOUNT_RE, PASSWORD_RE, EMAIL_RE } = require('../const')
 const md5 = require('md5')
+const jsonwebtoken = require('jsonwebtoken')
+const { secret } = require('../const/config')
 
 class UsersCtl {
   async signUp(ctx) {
@@ -63,16 +65,15 @@ class UsersCtl {
         typeMessage: '密码必须为string类型'
       }
     })
+    const { username, password } = ctx.request.body
     const user = await User.findOne({
       $or: [{ account: username }, { email: username }]
     })
     if (!user) ctx.throw(400, '帐号或者邮箱不存在')
-    const { id, password } = user
-    if (md5(ctx.request.body.password) !== password) ctx.throw(400, '密码错误')
-    ctx.success({
-      id,
-      token: ''
-    })
+    const { id, account, password: realPassword } = user
+    if (md5(password) !== realPassword) ctx.throw(400, '密码错误')
+    const token = jsonwebtoken.sign({ id, account }, secret, { expiresIn: '1d' })
+    ctx.success({ token })
   }
 }
 
