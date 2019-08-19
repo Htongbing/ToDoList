@@ -10,7 +10,7 @@ class UsersCtl {
     const { redis, cookies } = ctx
     const codeKey = `VERIFICATION:${cookies.get('verification_id')}`
     const code = await redis.get(codeKey)
-    if (verification_code !== code) ctx.throw(400, '验证码错误或者已过期')
+    if (!code || verification_code.toLowerCase() !== code.toLowerCase()) ctx.throw(400, '验证码错误或者已过期')
     redis.del(codeKey)
     cookies.set('verification_id', null)
     ctx.verifyParams({
@@ -68,7 +68,7 @@ class UsersCtl {
     const { username, password } = ctx.request.body
     const user = await User.findOne({
       $or: [{ account: username }, { email: username }]
-    })
+    }).select('+password')
     if (!user) ctx.throw(400, '帐号或者邮箱不存在')
     const { id, account, password: realPassword } = user
     if (md5(password) !== realPassword) ctx.throw(400, '密码错误')
