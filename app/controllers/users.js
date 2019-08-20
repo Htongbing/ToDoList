@@ -70,10 +70,10 @@ class UsersCtl {
       $or: [{ account: username }, { email: username }]
     }).select('+password')
     if (!user) ctx.throw(400, '帐号或者邮箱不存在')
-    const { id, account, password: realPassword } = user
+    const { id, account, password: realPassword, emailStatus } = user
     if (md5(password) !== realPassword) ctx.throw(400, '密码错误')
-    const token = jsonwebtoken.sign({ id, account }, secret, { expiresIn: '1d' })
-    ctx.success({ token })
+    const token = jsonwebtoken.sign({ id }, secret, { expiresIn: '1d' })
+    ctx.success({ token, account, emailStatus })
   }
 }
 
