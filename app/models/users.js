@@ -21,6 +21,10 @@ const userSchema = new Schema({
   emailStatus: {
     type: Number,
     default: 0
+  },
+  createTime: {
+    type: Date,
+    default: Date.now()
   }
 })
 
