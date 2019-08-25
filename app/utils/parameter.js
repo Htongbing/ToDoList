@@ -38,6 +38,15 @@ class Parameter {
         } else if (rule.format instanceof RegExp && !rule.format.exec(value)) {
           errors.push(rule.matchMessage || `${key}值必须匹配${rule.format}`)
         }
+      } else if (rule.type === 'number') {
+        if (value == null && rule.required) {
+          errors.push(rule.emptyMessage || defaultMessage('empty', key))
+        } else if (value != null && typeof value !== 'number') {
+          errors.push(rule.typeMessage || defaultMessage('type', key, 'number'))
+        } else if (value != null && rule.customVerify) {
+          const message = rule.customVerify(value)
+          message && errors.push(message)
+        }
       } else {
         throw new TypeError(`不支持${rule.type}类型的验证`)
       }
