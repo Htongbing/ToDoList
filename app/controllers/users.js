@@ -70,10 +70,27 @@ class UsersCtl {
       $or: [{ account: username }, { email: username }]
     }).select('+password')
     if (!user) ctx.throw(400, '帐号或者邮箱不存在')
-    const { id, account, password: realPassword, emailStatus, email } = user
+    const { id, account, password: realPassword, emailStatus } = user
     if (md5(password) !== realPassword) ctx.throw(400, '密码错误')
-    const token = jsonwebtoken.sign({ id, email }, secret, { expiresIn: '1d' })
+    const token = jsonwebtoken.sign({ id }, secret, { expiresIn: '1d' })
     ctx.success({ token, account, emailStatus, id })
+  }
+  async resetPassword(ctx) {
+    ctx.verifyParams({
+      password: {
+        type: 'string',
+        format: PASSWORD_RE,
+        required: true,
+        emptyMessage: '密码不能为空',
+        typeMessage: '密码必须为string类型',
+        matchMessage: '密码只能由数字和字母组成，且必须包含数字和字母，长度6-20'
+      }
+    })
+    const { password } = ctx.request.body
+    const { account } = ctx.state.user
+    await User.findOneAndUpdate({ account }, { password: md5(password) })
+    await ctx.redis.del(`EMAILLINKEX:${account}`)
+    ctx.success()
   }
 }
 

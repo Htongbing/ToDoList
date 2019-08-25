@@ -4,5 +4,6 @@ module.exports = {
   EMAIL_RE: /^[a-z0-9\!\#\$\%\&\'\*\+\/\=\?\^\_\`\{\|\}\~\-]+(?:\.[a-z0-9\!\#\$\%\&\'\*\+\/\=\?\^\_\`\{\|\}\~\-]+)*@(?:[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?$/i,
   VERIFICATION_TIME: 60,
   EMAIL_CODE_TIME: 600,
-  EMAIL_CODE_EX_TIME: 60
+  EMAIL_CODE_EX_TIME: 60,
+  RESET_PASSWORD_URL: 'http://localhost:3000/#/forgot'
 }
