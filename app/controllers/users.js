@@ -1,9 +1,8 @@
 const User = require('../models/users')
-const { ACCOUNT_RE, PASSWORD_RE, EMAIL_RE, EMAIL_CODE_TIME, EMAIL_CODE_EX_TIME } = require('../const')
+const { ACCOUNT_RE, PASSWORD_RE, EMAIL_RE } = require('../const')
 const md5 = require('md5')
 const jsonwebtoken = require('jsonwebtoken')
 const { secret } = require('../const/config')
-const { sendVerificationCode } = require('./email')
 
 class UsersCtl {
   async signUp(ctx) {
@@ -73,16 +72,8 @@ class UsersCtl {
     if (!user) ctx.throw(400, '帐号或者邮箱不存在')
     const { id, account, password: realPassword, emailStatus, email } = user
     if (md5(password) !== realPassword) ctx.throw(400, '密码错误')
-    const token = jsonwebtoken.sign({ emailStatus, id }, secret, { expiresIn: '1d' })
-    ctx.success({ token, account, emailStatus })
-    if (emailStatus !== 1) {
-      const { redis } = ctx
-      const curCode = await redis.get(`EMAILCODEEX:${account}`)
-      if (curCode) return
-      const code = await sendVerificationCode(email)
-      await redis.set(`EMAILCODE:${account}`, code, 'EX', EMAIL_CODE_TIME)
-      await redis.set(`EMAILCODEEX:${account}`, 'ToDoList', 'EX', EMAIL_CODE_EX_TIME)
-    }
+    const token = jsonwebtoken.sign({ id, email }, secret, { expiresIn: '1d' })
+    ctx.success({ token, account, emailStatus, id })
   }
 }
 
