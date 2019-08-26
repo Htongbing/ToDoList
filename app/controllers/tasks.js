@@ -113,8 +113,19 @@ class TaskCtl {
     const { userId } = ctx.request.query
     const data = await Task.aggregate([
       { $match: { userId: mongoose.Types.ObjectId(userId) } },
-      { $group: { _id: '$status', total: { $sum: 1 } } }
+      { $group: { _id: '$status', total: { $sum: 1 } } },
+      { $project: { _id: 0, status: '$_id', total: '$total' } },
+      { $sort: { status: 1 } }
     ])
+    for (let i = 0; i < 3; i++) {
+      if (!data[i]) {
+        data.push({ status: i, total: 0 })
+      } else if (data[i].status < i) {
+        data.push({ status: i, total: 0 })
+      } else if (data[i].status > i) {
+        data.splice(i, 0, { status: i, total: 0 })
+      }
+    }
     ctx.success(data)
   }
 }

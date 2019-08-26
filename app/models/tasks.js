@@ -36,6 +36,7 @@ const taskSchema = new Schema({
   // 任务当前的状态，0：未完成；1：已完成，2：已延期
   status: {
     type: Number,
+    enum: [0, 1, 2],
     default: 0
   }
 })

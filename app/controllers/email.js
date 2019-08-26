@@ -42,7 +42,7 @@ class EmailCtl {
     }
   }
   async verify(ctx) {
-    const { emailStatus, id, account } = ctx.state.user
+    const { emailStatus, id, account, email } = ctx.state.user
     if (emailStatus === 1) ctx.throw(400, '邮箱已验证')
     const { redis } = ctx
     const codeKey = `EMAILCODE:${account}`
@@ -50,7 +50,8 @@ class EmailCtl {
     if (String(ctx.request.body.code) !== code) ctx.throw(400, '邮箱验证码错误')
     await User.findByIdAndUpdate(id, { emailStatus: 1 })
     await redis.del(codeKey)
-    ctx.success()
+    const token = jsonwebtoken.sign({ id, account, email, emailStatus: 1 }, secret, { expiresIn: '1d' })
+    ctx.success({ token })
   }
   async forgot(ctx) {
     const { account } = ctx.request.body
