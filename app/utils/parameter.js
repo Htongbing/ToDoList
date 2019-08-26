@@ -39,11 +39,11 @@ class Parameter {
           errors.push(rule.matchMessage || `${key}值必须匹配${rule.format}`)
         }
       } else if (rule.type === 'number') {
-        if (value == null && rule.required) {
-          errors.push(rule.emptyMessage || defaultMessage('empty', key))
-        } else if (value != null && typeof value !== 'number') {
+        if (value == null) {
+          rule.required && errors.push(rule.emptyMessage || defaultMessage('empty', key))
+        } else if (typeof value !== 'number') {
           errors.push(rule.typeMessage || defaultMessage('type', key, 'number'))
-        } else if (value != null && rule.customVerify) {
+        } else if (rule.customVerify) {
           const message = rule.customVerify(value)
           message && errors.push(message)
         }
