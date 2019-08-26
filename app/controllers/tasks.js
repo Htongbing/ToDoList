@@ -1,4 +1,5 @@
 const Task = require('../models/tasks')
+const mongoose = require('mongoose')
 const { TASK_NAME_RE, TASK_CONTENT_RE } = require('../const')
 const STATUS = ['0', '1', '2']
 
@@ -98,6 +99,23 @@ class TaskCtl {
     const { userId } = ctx.request.query
     await Task.deleteMany({userId, _id: { $in: ids }})
     ctx.success()
+  }
+  async finishTask(ctx) {
+    const { userId } = ctx.request.query
+    const { id } = ctx.request.body
+    const task = await Task.findOne({ userId, _id: id })
+    if (!task) ctx.throw(400, '任务不存在')
+    if (task.status === 1) ctx.throw(400, '任务已完成')
+    await Task.updateOne(task, { status: 1 })
+    ctx.success()
+  }
+  async getStatistics(ctx) {
+    const { userId } = ctx.request.query
+    const data = await Task.aggregate([
+      { $match: { userId: mongoose.Types.ObjectId(userId) } },
+      { $group: { _id: '$status', total: { $sum: 1 } } }
+    ])
+    ctx.success(data)
   }
 }
 
