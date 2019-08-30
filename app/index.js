@@ -17,6 +17,8 @@ mongoose.connection.on('error', console.error).on('connected', () => console.log
 const Redis = require('ioredis')
 const redis = new Redis(redisPort, redisUrl)
 app.context.redis = redis
+const job = require('./timingTask')
+job.start()
 
 app.use(error({
   postFormat: (error, { stack }) => {

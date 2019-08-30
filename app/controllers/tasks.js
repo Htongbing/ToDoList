@@ -57,13 +57,15 @@ class TaskCtl {
       }
     })
     const { name, content, remark, estimatedTime } = ctx.request.body
-    await Task.create({
+    const options = {
       userId,
       name,
       content,
       remark,
       estimatedTime
-    })
+    }
+    estimatedTime < Date.now() && (options.status = 2)
+    await Task.create(options)
     ctx.success()
   }
   async updateTask(ctx) {
