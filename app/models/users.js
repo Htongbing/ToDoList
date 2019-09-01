@@ -20,12 +20,20 @@ const userSchema = new Schema({
   // 邮箱验证状态，0：未验证，1：已验证
   emailStatus: {
     type: Number,
+    enum: [0, 1],
     default: 0
   },
   createTime: {
     type: Date,
     default: Date.now()
-  }
+  },
+  needNotice: {
+    type: Number,
+    enum: [0, 1],
+    default: 0
+  },
+  noticeTime: String,
+  nextNoticeTime: Date
 })
 
 module.exports = model('User', userSchema)

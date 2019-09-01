@@ -2,7 +2,8 @@ const Router = require('koa-router')
 const router = new Router({
   prefix: '/users'
 })
-const { signUp, signIn, resetPassword } = require('../controllers/users')
+const { signUp, signIn, resetPassword, noticeSetting } = require('../controllers/users')
+const normalAuthor = require('../middlewares/author')(true)
 const jwt = require('koa-jwt')
 const { secret } = require('../const/config')
 const author = async (ctx, next) => {
@@ -20,5 +21,6 @@ const author = async (ctx, next) => {
 router.post('/signUp', signUp)
 router.post('/signIn', signIn)
 router.post('/resetPassword', author, resetPassword)
+router.post('/noticeSetting', normalAuthor, noticeSetting)
 
 module.exports = router

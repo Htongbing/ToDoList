@@ -2,6 +2,7 @@ const Task = require('../models/tasks')
 const mongoose = require('mongoose')
 const { TASK_NAME_RE, TASK_CONTENT_RE } = require('../const')
 const STATUS = ['0', '1', '2']
+const emptyStatusTotal = () => STATUS.map(i => ({ status: Number(i), total: 0 }))
 
 class TaskCtl {
   async getList(ctx) {
@@ -112,23 +113,31 @@ class TaskCtl {
     ctx.success()
   }
   async getStatistics(ctx) {
-    const { userId } = ctx.request.query
+    let { userId, startTime, endTime } = ctx.request.query
+    startTime = startTime < 1 ? null : Math.floor(Number(startTime)) || null
+    endTime = endTime < 1 ? null : Math.floor(Number(endTime)) || null
+    const $match = { userId: mongoose.Types.ObjectId(userId) }
+    if (startTime) {
+      $match.createdTime = { $gte: new Date(startTime) }
+    }
+    if (endTime) {
+      $match.createdTime = $match.createdTime || {}
+      $match.createdTime.$lte = new Date(endTime)
+    }
     const data = await Task.aggregate([
-      { $match: { userId: mongoose.Types.ObjectId(userId) } },
+      { $match },
       { $group: { _id: '$status', total: { $sum: 1 } } },
       { $project: { _id: 0, status: '$_id', total: '$total' } },
       { $sort: { status: 1 } }
     ])
-    for (let i = 0; i < 3; i++) {
-      if (!data[i]) {
-        data.push({ status: i, total: 0 })
-      } else if (data[i].status < i) {
-        data.push({ status: i, total: 0 })
-      } else if (data[i].status > i) {
-        data.splice(i, 0, { status: i, total: 0 })
-      }
-    }
-    ctx.success(data)
+    const list = emptyStatusTotal()
+    data.forEach(item => {
+      list[item.status] = item
+    })
+    ctx.success(list)
+  }
+  async updateStatus() {
+    return await Task.updateMany({ status: 0, estimatedTime: { $lt: Date.now() } }, { status: 2 })
   }
 }
 

@@ -47,6 +47,12 @@ class Parameter {
           const message = rule.customVerify(value)
           message && errors.push(message)
         }
+      } else if (rule.type === 'enum') {
+        if (value == null) {
+          rule.required && errors.push(rule.emptyMessage || defaultMessage('empty', key))
+        } else if (!rule.values.includes(value)) {
+          errors.push(rule.matchMessage || `${key}值只能是${rule.values.join(',')}`)
+        }
       } else {
         throw new TypeError(`不支持${rule.type}类型的验证`)
       }

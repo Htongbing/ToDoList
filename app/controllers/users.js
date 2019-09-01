@@ -1,8 +1,9 @@
 const User = require('../models/users')
-const { ACCOUNT_RE, PASSWORD_RE, EMAIL_RE } = require('../const')
+const { ACCOUNT_RE, PASSWORD_RE, EMAIL_RE, NOTICE_TIME_RE } = require('../const')
 const md5 = require('md5')
 const jsonwebtoken = require('jsonwebtoken')
 const { secret } = require('../const/config')
+const moment = require('moment')
 
 class UsersCtl {
   async signUp(ctx) {
@@ -90,6 +91,39 @@ class UsersCtl {
     const { account } = ctx.state.user
     await User.findOneAndUpdate({ account }, { password: md5(password) })
     await ctx.redis.del(`EMAILLINKEX:${account}`)
+    ctx.success()
+  }
+  async noticeSetting(ctx) {
+    const { userId } = ctx.request.query
+    const { needNotice, noticeTime } = ctx.request.body
+    ctx.verifyParams({
+      needNotice: {
+        type: 'enum',
+        values: [0, 1],
+        required: true,
+        emptyMessage: '是否提醒不能为空',
+        matchMessage: '是否提醒的值只能是0、1'
+      }
+    })
+    const options = { needNotice }
+    if (needNotice === 1) {
+      ctx.verifyParams({
+        noticeTime: {
+          type: 'string',
+          format: NOTICE_TIME_RE,
+          required: true,
+          emptyMessage: '提醒时间不能为空',
+          typeMessage: '提醒时间必须为string类型',
+          matchMessage: '提醒时间必须是正确的格式，如"18:00"'
+        }
+      })
+      options.noticeTime = noticeTime
+      const now = new Date()
+      const date = moment(now).format('YYYY-MM-DD')
+      const time = new Date(`${date} ${noticeTime}`) < now ? new Date(`${date} 00:00:00`) - (-8.64e7) : + new Date(`${date} 00:00:00`)
+      options.nextNoticeTime = time
+    }
+    await User.findByIdAndUpdate(userId, options)
     ctx.success()
   }
 }

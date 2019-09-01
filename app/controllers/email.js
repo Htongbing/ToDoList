@@ -1,11 +1,13 @@
 const nodemailer = require('nodemailer')
 const { EMAIL, EMAIL_KEY, EMAIL_HOST } = process.env
 const { createRandomCode } = require('../utils')
-const { EMAIL_CODE_TIME, EMAIL_CODE_EX_TIME, RESET_PASSWORD_URL } = require('../const')
+const { EMAIL_CODE_TIME, EMAIL_CODE_EX_TIME, RESET_PASSWORD_URL, NOTICE_TIME_RE } = require('../const')
 const User = require('../models/users')
+const Task = require('../models/tasks')
 const jsonwebtoken = require('jsonwebtoken')
 const { secret } = require('../const/config')
 const EX_TIME = Math.floor(EMAIL_CODE_TIME / 60)
+const moment = require('moment')
 
 const transporter = nodemailer.createTransport({
   host: EMAIL_HOST,
@@ -77,6 +79,31 @@ class EmailCtl {
     } catch (e) {
       ctx.throw(500, '邮件发送失败')
     }
+  }
+  async timingEmail() {
+    const now = new Date()
+    const targetDate = moment(now).format('YYYY-MM-DD')
+    const users = await User.find({ needNotice: 1, noticeTime: NOTICE_TIME_RE, nextNoticeTime: { $lte: + now } })
+    const ids = []
+    users.forEach(async ({noticeTime, email, id, account}) => {
+      if (now >= new Date(`${targetDate} ${noticeTime}`)) {
+        ids.push(id)
+        const tasks = await Task.find({ userId: id, status: { $in: [0, 2] } })
+        if (tasks.length) {
+          const str = `<h3>${account}，欢迎使用ToDoList，下列是未完成的任务提醒</h3>`
+          const mailOptions = {
+            from: `"ToDoList" <${EMAIL}>`,
+            subject: '任务提醒',
+            to: `${email}`,
+            html: `${str}${tasks.map(({name, estimatedTime}) => {
+              return `<div style="margin-top:60px;"><p>任务名：${name}</p><p>预计完成时间：${estimatedTime ? moment(estimatedTime).format('YYYY-MM-DD HH:mm:ss') : '--'}</p></div>`
+            }).join('')}`
+          }
+          transporter.sendMail(mailOptions)
+        }
+      }
+    })
+    return await User.updateMany({ _id: { $in: ids } }, { nextNoticeTime: moment(new Date(`${targetDate} 00:00:00`) - (-8.64e7)) })
   }
 }
 
