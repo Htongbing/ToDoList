@@ -1,4 +1,7 @@
 require('dotenv').config()
+const fs = require('fs')
+const path = require('path')
+const moment = require('moment')
 const Koa = require('koa')
 const app = new Koa()
 const routing = require('./routes')
@@ -28,6 +31,7 @@ app.use(error({
       message
     }
     error.status = /^(?!404)4/.test(res.code) ? 200 : res.code
+    fs.appendFileSync(path.join(__dirname, '../error.log'), `[${moment().format('YYYY-MM-DD HH:mm:ss')}] ${stack}\n\n`)
     return process.env.NODE_ENV === 'production' ? res : { stack, ...res }
   }
 }))
