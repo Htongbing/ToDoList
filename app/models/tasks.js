@@ -22,7 +22,6 @@ const taskSchema = new Schema({
   remark: String,
   createdTime: {
     type: Date,
-    default: Date.now(),
     get: val => + new Date(val)
   },
   estimatedTime: {
@@ -41,5 +40,10 @@ const taskSchema = new Schema({
   }
 })
 taskSchema.set('toJSON', { getters: true })
+
+taskSchema.pre('save', function(next) {
+  this.createdTime = Date.now()
+  next()
+})
 
 module.exports = model('Task', taskSchema)

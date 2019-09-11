@@ -62,8 +62,8 @@ class TaskCtl {
       userId,
       name,
       content,
-      remark,
-      estimatedTime
+      remark: remark || undefined,
+      estimatedTime: estimatedTime || undefined
     }
     estimatedTime < Date.now() && (options.status = 2)
     await Task.create(options)

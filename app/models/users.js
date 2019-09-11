@@ -23,10 +23,7 @@ const userSchema = new Schema({
     enum: [0, 1],
     default: 0
   },
-  createTime: {
-    type: Date,
-    default: Date.now()
-  },
+  createdTime: Date,
   needNotice: {
     type: Number,
     enum: [0, 1],
@@ -34,6 +31,11 @@ const userSchema = new Schema({
   },
   noticeTime: String,
   nextNoticeTime: Date
+})
+
+userSchema.pre('save', function(next) {
+  this.createdTime = Date.now()
+  next()
 })
 
 module.exports = model('User', userSchema)
