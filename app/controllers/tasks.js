@@ -65,7 +65,7 @@ class TaskCtl {
       remark: remark || undefined,
       estimatedTime: estimatedTime || undefined
     }
-    estimatedTime < Date.now() && (options.status = 2)
+    estimatedTime && estimatedTime < Date.now() && (options.status = 2)
     await Task.create(options)
     ctx.success()
   }
