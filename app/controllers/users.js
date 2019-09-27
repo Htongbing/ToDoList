@@ -88,9 +88,9 @@ class UsersCtl {
       }
     })
     const { password } = ctx.request.body
-    const { account } = ctx.state.user
-    await User.findOneAndUpdate({ account }, { password: md5(password) })
-    await ctx.redis.del(`EMAILLINKEX:${account}`)
+    const { email } = ctx.state.user
+    await User.findOneAndUpdate({ email }, { password: md5(password) })
+    await ctx.redis.del(`EMAILLINKEX:${email}`)
     ctx.success()
   }
   async noticeSetting(ctx) {
@@ -122,9 +122,17 @@ class UsersCtl {
       const date = moment(now).format('YYYY-MM-DD')
       const time = new Date(`${date} ${noticeTime}`) < now ? new Date(`${date} 00:00:00`) - (-8.64e7) : + new Date(`${date} 00:00:00`)
       options.nextNoticeTime = time
+    } else {
+      options.noticeTime = null
+      options.nextNoticeTime = null
     }
     await User.findByIdAndUpdate(userId, options)
     ctx.success()
+  }
+  async getNoticeSetting(ctx) {
+    const { userId } = ctx.request.query
+    const { noticeTime, needNotice } = await User.findById(userId)
+    ctx.success({ noticeTime, needNotice })
   }
 }
 

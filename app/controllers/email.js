@@ -56,15 +56,17 @@ class EmailCtl {
     ctx.success({ token })
   }
   async forgot(ctx) {
-    const { account } = ctx.request.body
-    const user = await User.findOne({ account })
+    const { username } = ctx.request.body
+    const user = await User.findOne({
+      $or: [{ account: username }, { email: username }]
+    })
     if (!user) ctx.throw(400, '用户不存在')
     const { email, emailStatus } = user
     if (emailStatus !== 1) ctx.throw(400, '邮箱未验证')
     const { redis } = ctx
-    const curCode = await redis.get(`EMAILLINKEX:${account}`)
+    const curCode = await redis.get(`EMAILLINKEX:${email}`)
     if (curCode) ctx.throw(400, '邮件已发出') 
-    const token = jsonwebtoken.sign({ account }, secret, { expiresIn: `${EX_TIME}m` })
+    const token = jsonwebtoken.sign({ email }, secret, { expiresIn: `${EX_TIME}m` })
     const url = `${RESET_PASSWORD_URL}?token=${token}`
     const mailOptions = {
       from: `"ToDoList" <${EMAIL}>`,
@@ -74,7 +76,7 @@ class EmailCtl {
     }
     try {
       await transporter.sendMail(mailOptions)
-      await redis.set(`EMAILLINKEX:${account}`, 'ToDoList', 'EX', EMAIL_CODE_TIME)
+      await redis.set(`EMAILLINKEX:${email}`, 'ToDoList', 'EX', EMAIL_CODE_TIME)
       ctx.success()
     } catch (e) {
       ctx.throw(500, '邮件发送失败')
