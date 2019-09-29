@@ -9,8 +9,8 @@ const { secret } = require('../const/config')
 const author = async (ctx, next) => {
   try {
     await jwt({ secret })(ctx, () => {})
-    const { account } = ctx.state.user
-    const EX = await ctx.redis.get(`EMAILLINKEX:${account}`)
+    const { email } = ctx.state.user
+    const EX = await ctx.redis.get(`EMAILLINKEX:${email}`)
     if (!EX) throw new Error()
   } catch (e) {
     ctx.throw(403, 'token已过期')
