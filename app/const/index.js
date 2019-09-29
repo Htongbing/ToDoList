@@ -8,5 +8,5 @@ module.exports = {
   VERIFICATION_TIME: 60,
   EMAIL_CODE_TIME: 600,
   EMAIL_CODE_EX_TIME: 60,
-  RESET_PASSWORD_URL: 'http://localhost:3000/#/forgot'
+  RESET_PASSWORD_URL: 'http://localhost:3000/#/reset-password'
 }
