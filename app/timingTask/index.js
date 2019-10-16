@@ -3,7 +3,7 @@ const { timingEmail } = require('../controllers/email')
 const { CronJob } = require('cron')
 
 const timingTask = () => {
-  Promise.all([updateStatus(), timingEmail()]).then(console.log).catch(console.log)
+  Promise.all([updateStatus(), timingEmail()])
 }
 
 const job = new CronJob('0 * * * * *', timingTask)
